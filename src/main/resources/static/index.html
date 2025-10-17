@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Championship Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <h2>Cricket Championship</h2>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="teams.html">Manage Teams</a>
+                <a href="players.html">Manage Players</a>
+            </div>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <h1 style="text-align: center; color: var(--primary-color);">Welcome to the Championship Dashboard</h1>
+        <p style="text-align: center; font-size: 1.1rem; margin-bottom: 40px;">Use the navigation links above to manage teams and players.</p>
+
+        <div style="display: flex; justify-content: space-around; gap: 20px;">
+            <div style="background: var(--card-background); padding: 30px; border-radius: 10px; box-shadow: var(--shadow); text-align: center; width: 50%;">
+                <h2>Teams</h2>
+                <p>Add, view, and manage all competing teams.</p>
+                <a href="teams.html" class="btn btn-primary" style="margin-top: 15px; display: inline-block;">Go to Teams</a>
+            </div>
+            <div style="background: var(--card-background); padding: 30px; border-radius: 10px; box-shadow: var(--shadow); text-align: center; width: 50%;">
+                <h2>Players</h2>
+                <p>Register and assign players to their respective teams.</p>
+                <a href="players.html" class="btn btn-primary" style="margin-top: 15px; display: inline-block;">Go to Players</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

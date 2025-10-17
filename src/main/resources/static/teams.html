@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Teams</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<!-- The onload event calls the initial data loading function -->
+<body onload="loadTeams()">
+    <header>
+        <nav>
+            <h2>Cricket Championship</h2>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="teams.html">Manage Teams</a>
+                <a href="players.html">Manage Players</a>
+            </div>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <h1>Team List</h1>
+        
+        <button onclick="prepareTeamFormForNew()" class="btn btn-primary mb-3">Add New Team</button>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Team Name</th>
+                    <th>Institute Name</th>
+                    <th>Captain</th>
+                    <th>Vice Captain</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="teams-table-body">
+                <!-- Team rows will be injected here by app.js -->
+                <tr><td colspan="6">Loading teams...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- --- TEAM MODAL FOR ADD/EDIT --- -->
+    <div id="team-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="team-form-title">Add New Team</h2>
+            <form id="team-form" onsubmit="handleTeamFormSubmit(event)">
+                <input type="hidden" id="team-id">
+                
+                <div class="form-group">
+                    <label for="teamName">Team Name (Required)</label>
+                    <input type="text" id="teamName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="instituteName">Institute Name</label>
+                    <input type="text" id="instituteName">
+                </div>
+
+                <div class="form-group">
+                    <label for="captain">Captain (Required)</label>
+                    <input type="text" id="captain" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="viceCaptain">Vice Captain</label>
+                    <input type="text" id="viceCaptain">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" onclick="hideModal('team-modal')" class="btn btn-danger">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Team</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Simple message modal -->
+    <div id="message-modal" class="modal">
+        <div class="modal-content" style="text-align: center; max-width: 300px;">
+            <p id="message-text" style="font-weight: 700;"></p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
