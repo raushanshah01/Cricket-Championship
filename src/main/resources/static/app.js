@@ -393,10 +393,10 @@ function renderPromotionResults(teams) {
     if (teams.length === 0) {
         html += '<p>No teams qualified for promotion.</p>';
     } else {
-        html += `<p>Top **${teams.length}** Teams entering the Main Championship:</p>
+        html += `<p>Top ${teams.length} Teams entering the Main Championship:</p>
                  <ol>`;
         teams.forEach(team => {
-            html += `<li>**${team.teamName}** (${team.instituteName || 'N/A'})</li>`;
+            html += `<li>${team.teamName}m  (${team.instituteName || 'N/A'})</li>`;
         });
         html += `</ol>`;
     }
