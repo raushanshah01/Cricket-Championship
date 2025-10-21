@@ -5,9 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Teams</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* ADDED custom styles for the new sections */
+        .card-group {
+            background: var(--card-background);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        .card-group h3 {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        .card-group ul, .card-group ol {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+        .query-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+    </style>
 </head>
-<!-- The onload event calls the initial data loading function -->
-<body onload="loadTeams()">
+<body onload="loadTeams(); loadNewTeamFeatures();"> 
     <header>
         <nav>
             <h2>Cricket Championship</h2>
@@ -20,9 +45,17 @@
     </header>
     
     <div class="container">
-        <h1>Team List</h1>
+        <h1>Team List & Tournament Management</h1>
         
-        <button onclick="prepareTeamFormForNew()" class="btn btn-primary mb-3">Add New Team</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <button onclick="prepareTeamFormForNew()" class="btn btn-primary">Add New Team</button>
+            <div class="form-group" style="width: 250px; margin: 0;">
+                <label for="instituteFilter" style="font-weight: normal;">Filter by Institute:</label>
+                <select id="instituteFilter" onchange="handleInstituteFilterChange(event)">
+                    <option value="">-- All Institutes --</option>
+                    </select>
+            </div>
+        </div>
 
         <table class="data-table">
             <thead>
@@ -31,18 +64,26 @@
                     <th>Team Name</th>
                     <th>Institute Name</th>
                     <th>Captain</th>
-                    <th>Vice Captain</th>
+                    <th>Players</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="teams-table-body">
-                <!-- Team rows will be injected here by app.js -->
                 <tr><td colspan="6">Loading teams...</td></tr>
             </tbody>
         </table>
+
+        <div class="query-container">
+            <div id="draw-sheets-results">
+                <div class="card-group"><h2>Tournament Draw Sheets</h2><p>Loading draw sheets...</p></div>
+            </div>
+            
+            <div id="promotion-results">
+                <div class="card-group"><h2>Main Championship Promotion Results</h2><p>Loading promotion results...</p></div>
+            </div>
+        </div>
     </div>
 
-    <!-- --- TEAM MODAL FOR ADD/EDIT --- -->
     <div id="team-modal" class="modal">
         <div class="modal-content">
             <h2 id="team-form-title">Add New Team</h2>
@@ -77,9 +118,8 @@
         </div>
     </div>
 
-    <!-- Simple message modal -->
     <div id="message-modal" class="modal">
-        <div class="modal-content" style="text-align: center; max-width: 300px;">
+        <div class="modal-content" style="text-align: center; max-width: 400px;">
             <p id="message-text" style="font-weight: 700;"></p>
         </div>
     </div>

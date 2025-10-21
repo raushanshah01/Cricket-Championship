@@ -2,12 +2,13 @@ package com.mahotsav.cricketchampionship.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne; // 👈 Import this
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Player {
@@ -17,7 +18,10 @@ public class Player {
     private Long id;
 
     private String name;
+
+    @Column(unique = true) // ENFORCES UNIQUENESS
     private String registrationNumber;
+    
     private String branch;
     private String section;
     private String year;

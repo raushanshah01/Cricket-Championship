@@ -12,8 +12,11 @@ function showMessage(message, isError = false) {
         modalText.style.color = isError ? '#e53935' : '#4CAF50';
         modal.classList.add('active');
 
-        // Automatically hide after 3 seconds
-        setTimeout(() => modal.classList.remove('active'), 3000);
+        // Automatically hide after 3 seconds, storing the timeout ID
+        window.messageTimeout = setTimeout(() => {
+            modal.classList.remove('active');
+            modalText.innerHTML = ''; // Clear content for next use
+        }, 3000);
     } else {
         console.warn('Modal structure not found. Using console/alert fallback.', message);
         if (isError) {
@@ -60,16 +63,28 @@ async function sendData(endpoint, method, data = null) {
         }
         
         // Try to parse JSON, even on errors, if response is not 204
-        const responseData = await response.json();
+        // Check for empty body before parsing
+        const responseText = await response.text();
+        let responseData = {};
+        if (responseText) {
+            responseData = JSON.parse(responseText);
+        }
+
 
         if (!response.ok) {
-            // Throw API error response details (e.g., from Spring Validation/Error Handler)
+            // Throw API error response details 
             throw new Error(`API Error: ${response.status} - ${JSON.stringify(responseData)}`);
         }
         
         return responseData; // Return the parsed JSON body
     } catch (error) {
-        showMessage(`Operation Failed. Check console for details.`, true);
+        // Check if the error is due to a unique constraint violation (often shown in error.message)
+        const isConstraintError = error.message.includes('registrationNumber') || error.message.includes('unique');
+        const displayMessage = isConstraintError 
+            ? "Operation Failed: Player Registration Number already exists. Players must be unique."
+            : `Operation Failed. Check console for details.`;
+            
+        showMessage(displayMessage, true);
         console.error("API call error:", error);
         return null;
     }
@@ -88,17 +103,20 @@ function hideModal(id) {
 
 // --- TEAM CRUD Logic (Used in teams.html) ---
 
+// ADDED View Players button and Player Count column
 function createTeamRowHTML(team) {
+    const playerCount = team.players ? team.players.length : 0; // Check player count
     return `
         <tr>
             <td data-label="ID">${team.id}</td>
             <td data-label="Team Name">${team.teamName}</td>
             <td data-label="Institute Name">${team.instituteName || 'N/A'}</td>
             <td data-label="Captain">${team.captain}</td>
-            <td data-label="Vice Captain">${team.viceCaptain || 'N/A'}</td>
+            <td data-label="Players">${playerCount} Players</td>
             <td data-label="Actions" class="action-cell">
                 <button onclick="prepareTeamFormForEdit(${team.id})" class="btn btn-info btn-sm">Edit</button>
                 <button onclick="handleDeleteTeam(${team.id})" class="btn btn-danger btn-sm">Delete</button>
+                <button onclick="showPlayersForTeam(${team.id}, '${team.teamName}')" class="btn btn-primary btn-sm">View Players</button>
             </td>
         </tr>
     `;
@@ -115,6 +133,9 @@ function renderTeamsTable(teams) {
 async function loadTeams() {
     const teams = await fetchData('/teams'); // GET /api/teams
     renderTeamsTable(teams);
+    
+    // Used to populate the institute filter dropdown on initial load
+    populateInstituteFilter(teams); 
 }
 
 function prepareTeamFormForNew() {
@@ -160,8 +181,9 @@ async function handleTeamFormSubmit(event) {
     if (result) {
         hideModal('team-modal');
         showMessage(`Team ${id ? 'updated' : 'created'} successfully!`);
-        // FIX: Always reload the list after creation/edit
-        loadTeams(); 
+        // Reload the list and new features
+        loadTeams();
+        loadNewTeamFeatures(); 
     }
 }
 
@@ -171,8 +193,9 @@ async function handleDeleteTeam(id) {
     }
     const result = await sendData(`/teams/${id}`, 'DELETE'); 
     if (result && result.success) {
-        // FIX: Rely on reloading the list to refresh the UI
+        // Reload the list and new features
         loadTeams(); 
+        loadNewTeamFeatures(); 
         showMessage(`Team ID ${id} deleted successfully.`);
     }
 }
@@ -293,8 +316,10 @@ async function handlePlayerFormSubmit(event) {
     if (result) {
         hideModal('player-modal');
         showMessage(`Player ${id ? 'updated' : 'created'} successfully!`);
-        // FIX: Always reload the list after creation/edit
+        // Always reload the list after creation/edit
         loadPlayers(); 
+        // Also reload teams to update player counts on the team page
+        loadTeams(); 
     }
 }
 
@@ -304,8 +329,126 @@ async function handleDeletePlayer(id) {
     }
     const result = await sendData(`/players/${id}`, 'DELETE');
     if (result && result.success) {
-        // FIX: Rely on reloading the list to refresh the UI
+        // Reload players and teams (for player count update)
         loadPlayers(); 
+        loadTeams();
         showMessage(`Player ID ${id} deleted successfully.`);
     }
+}
+
+// --- NEW EXTENSION LOGIC (Draw Sheets, Promotion Results, Filter by Institute) ---
+
+// 1. Function to display players for a team (re-using message modal)
+async function showPlayersForTeam(teamId, teamName) {
+    const team = await fetchData(`/teams/${teamId}`);
+    const modal = document.getElementById('message-modal');
+    const modalText = document.getElementById('message-text');
+
+    if (team && team.players && modal && modalText) {
+        const playerList = team.players.map(p => 
+            `<li>${p.name} (Reg: ${p.registrationNumber}, ${p.branch}/${p.year})</li>`
+        ).join('');
+
+        // Stop auto-hide if it was running
+        clearTimeout(window.messageTimeout); 
+        
+        modalText.innerHTML = `<h3>Players for ${teamName}</h3>
+                               <ul style="text-align: left; padding-left: 20px;">${playerList || '<li>No players currently assigned.</li>'}</ul>
+                               <div style="margin-top: 15px;"><button onclick="hideModal('message-modal')" class="btn btn-primary">Close</button></div>`;
+        modalText.style.color = '#333333'; // Reset color
+        modal.classList.add('active');
+    } else {
+        showMessage(`No players registered for ${teamName}.`, true);
+    }
+}
+
+
+// 2. Rendering Functions for Tournament Data
+function renderDrawSheets(pools) {
+    const container = document.getElementById('draw-sheets-results');
+    if (!container || !pools) return;
+
+    let html = '<h2>Tournament Draw Sheets</h2>';
+    if (pools.length === 0 || (pools.length === 1 && pools[0].length === 0)) {
+        html += '<p>No teams registered to generate a draw.</p>';
+    } else {
+        pools.forEach((pool, index) => {
+            html += `<div class="card-group">
+                        <h3>Pool ${index + 1} (${pool.length} Teams)</h3>
+                        <ul>`;
+            pool.forEach(team => {
+                html += `<li>${team.teamName} (${team.instituteName || 'N/A'})</li>`;
+            });
+            html += `</ul></div>`;
+        });
+    }
+    container.innerHTML = html;
+}
+
+function renderPromotionResults(teams) {
+    const container = document.getElementById('promotion-results');
+    if (!container || !teams) return;
+
+    let html = '<h2>Main Championship Promotion Results</h2>';
+    if (teams.length === 0) {
+        html += '<p>No teams qualified for promotion.</p>';
+    } else {
+        html += `<p>Top **${teams.length}** Teams entering the Main Championship:</p>
+                 <ol>`;
+        teams.forEach(team => {
+            html += `<li>**${team.teamName}** (${team.instituteName || 'N/A'})</li>`;
+        });
+        html += `</ol>`;
+    }
+    container.innerHTML = html;
+}
+
+
+// 3. Main Loader for New Features
+async function loadNewTeamFeatures() {
+    // 1. Load Draw Sheets: GET /api/teams/draw-sheets
+    const drawSheets = await fetchData('/teams/draw-sheets');
+    if (drawSheets) {
+        renderDrawSheets(drawSheets);
+    }
+
+    // 2. Load Promotion Results (Top 4 teams by default): GET /api/teams/promotion-results?topN=4
+    const promotionResults = await fetchData('/teams/promotion-results?topN=4');
+    if (promotionResults) {
+        renderPromotionResults(promotionResults);
+    }
+}
+
+// 4. Institute Filter Logic
+function populateInstituteFilter(teams) {
+    const dropdown = document.getElementById('instituteFilter');
+    if (!dropdown || !teams) return;
+
+    // Get unique, non-empty institute names
+    const uniqueInstitutes = [...new Set(teams.map(t => t.instituteName).filter(name => name && name.trim()))];
+    
+    dropdown.innerHTML = '<option value="">-- All Institutes --</option>';
+    
+    uniqueInstitutes.forEach(institute => {
+        const option = document.createElement('option');
+        option.value = institute;
+        option.textContent = institute;
+        dropdown.appendChild(option);
+    });
+}
+
+async function handleInstituteFilterChange(event) {
+    const instituteName = event.target.value;
+    let teams;
+
+    if (instituteName) {
+        // Fetch filtered teams: GET /api/teams/by-institute?instituteName=...
+        teams = await fetchData(`/teams/by-institute?instituteName=${encodeURIComponent(instituteName)}`);
+    } else {
+        // Fetch all teams
+        teams = await fetchData('/teams');
+    }
+    
+    // Render the main team table with the filtered (or all) results
+    renderTeamsTable(teams);
 }

@@ -1,104 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manage Players</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<!-- The onload event calls the initial data loading function -->
-<body onload="loadPlayers()">
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <!-- The onload event calls the initial data loading function -->
+  <body onload="loadPlayers()">
     <header>
-        <nav>
-            <h2>Cricket Championship</h2>
-            <div class="nav-links">
-                <a href="index.html">Home</a>
-                <a href="teams.html">Manage Teams</a>
-                <a href="players.html">Manage Players</a>
-            </div>
-        </nav>
+      <nav>
+        <h2>Cricket Championship</h2>
+        <div class="nav-links">
+          <a href="index.html">Home</a>
+          <a href="teams.html">Manage Teams</a>
+          <a href="players.html">Manage Players</a>
+        </div>
+      </nav>
     </header>
-    
-    <div class="container">
-        <h1>Player List</h1>
-        
-        <button onclick="preparePlayerFormForNew()" class="btn btn-primary mb-3">Add New Player</button>
 
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Reg. No.</th>
-                    <th>Branch / Year</th>
-                    <th>Mobile</th>
-                    <th>Team</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="players-table-body">
-                <!-- Player rows will be injected here by app.js -->
-                <tr><td colspan="7">Loading players...</td></tr>
-            </tbody>
-        </table>
+    <div class="container">
+      <h1>Player List</h1>
+
+      <button onclick="preparePlayerFormForNew()" class="btn btn-primary mb-3">
+        Add New Player
+      </button>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Reg. No.</th>
+            <th>Branch / Year</th>
+            <th>Mobile</th>
+            <th>Team</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="players-table-body">
+          <!-- Player rows will be injected here by app.js -->
+          <tr>
+            <td colspan="7">Loading players...</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- --- PLAYER MODAL FOR ADD/EDIT --- -->
     <div id="player-modal" class="modal">
-        <div class="modal-content">
-            <h2 id="player-form-title">Add New Player</h2>
-            <form id="player-form" onsubmit="handlePlayerFormSubmit(event)">
-                <input type="hidden" id="player-id">
-                
-                <div class="form-group">
-                    <label for="playerName">Name (Required)</label>
-                    <input type="text" id="playerName" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="registrationNumber">Registration Number (Required)</label>
-                    <input type="text" id="registrationNumber" required>
-                </div>
+      <div class="modal-content">
+        <h2 id="player-form-title">Add New Player</h2>
+        <form id="player-form" onsubmit="handlePlayerFormSubmit(event)">
+          <input type="hidden" id="player-id" />
 
-                <div class="form-group">
-                    <label for="branch">Branch (e.g., CS)</label>
-                    <input type="text" id="branch">
-                </div>
-                
-                <div class="form-group">
-                    <label for="year">Year (e.g., 3rd)</label>
-                    <input type="text" id="year">
-                </div>
+          <div class="form-group">
+            <label for="playerName">Name (Required)</label>
+            <input type="text" id="playerName" required />
+          </div>
 
-                <div class="form-group">
-                    <label for="mobileNumber">Mobile Number</label>
-                    <input type="tel" id="mobileNumber">
-                </div>
+          <div class="form-group">
+            <label for="registrationNumber"
+              >Registration Number (Required)</label
+            >
+            <input type="text" id="registrationNumber" required />
+          </div>
 
-                <!-- Team Selector - Crucial for the Many-to-One Relationship -->
-                <div class="form-group">
-                    <label for="teamId">Assign Team (Required)</label>
-                    <select id="teamId" required>
-                        <!-- Options will be populated by app.js -->
-                        <option value="">Loading Teams...</option>
-                    </select>
-                </div>
+          <div class="form-group">
+            <label for="section">Section</label>
+            <input type="text" id="section" />
+          </div>
 
-                <div class="form-actions">
-                    <button type="button" onclick="hideModal('player-modal')" class="btn btn-danger">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Player</button>
-                </div>
-            </form>
-        </div>
+          <div class="form-group">
+            <label for="branch">Branch (e.g., CS)</label>
+            <input type="text" id="branch" />
+          </div>
+
+          <div class="form-group">
+            <label for="year">Year (e.g., 3rd)</label>
+            <input type="text" id="year" />
+          </div>
+
+          <div class="form-group">
+            <label for="mobileNumber">Mobile Number</label>
+            <input type="tel" id="mobileNumber" />
+          </div>
+
+          <!-- Team Selector - Crucial for the Many-to-One Relationship -->
+          <div class="form-group">
+            <label for="teamId">Assign Team (Required)</label>
+            <select id="teamId" required>
+              <!-- Options will be populated by app.js -->
+              <option value="">Loading Teams...</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              onclick="hideModal('player-modal')"
+              class="btn btn-danger"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">Save Player</button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Simple message modal -->
     <div id="message-modal" class="modal">
-        <div class="modal-content" style="text-align: center; max-width: 300px;">
-            <p id="message-text" style="font-weight: 700;"></p>
-        </div>
+      <div class="modal-content" style="text-align: center; max-width: 300px">
+        <p id="message-text" style="font-weight: 700"></p>
+      </div>
     </div>
 
     <script src="app.js"></script>
-</body>
+  </body>
 </html>
